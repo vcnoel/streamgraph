@@ -1,0 +1,13 @@
+defaults:
+  - model: default
+
+train:
+  batch_size: 4
+  learning_rate: 1e-4
+  epochs: 5
+  device: "cuda"
+  output_dir: "checkpoints/"
+
+dataset:
+  path: "data/processed/aligned_data.pt"
+  max_len: 128

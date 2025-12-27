@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv
+env/
+venv/
+.gemini/
+
+# IDE
+.vscode/
+.idea/
+
+# Project Data & Artifacts
+data/
+checkpoints/
+logs/
+outputs/
+*.pt
+*.pth
+*.ckpt
+
+# Hydra
+.hydra/

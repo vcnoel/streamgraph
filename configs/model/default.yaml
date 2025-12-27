@@ -1,0 +1,13 @@
+name_or_path: "C:\\Users\\valno\\.cache\\huggingface\\hub\\models--meta-llama--Llama-3.1-8B-Instruct\\snapshots\\0e9e39f249a16976918f6564b8830bc894c89659"
+hidden_dim: 4096
+target_layer: 28
+  
+probes:
+  entity:
+    hidden_dim: 4096
+    num_classes: 9
+    dropout: 0.1
+  relation:
+    hidden_dim: 4096
+    num_classes: 15
+    dropout: 0.1
