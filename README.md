@@ -58,15 +58,23 @@ model:
 StreamGraph requires token-aligned training data. The system currently supports the WebNLG dataset.
 Download the raw data into `data/raw/webnlg`.
 
-### 2. Feature Caching (Optimization)
-To speed up training, cache the LLM hidden states to disk. This avoids re-running the heavy 8B parameter model during probe training.
+### 2. Data Alignment (Optimization)
+To avoid CPU bottlenecks during feature extraction, pre-align the dataset using the tokenizer.
+
+```bash
+python scripts/align_data.py
+```
+*Output: `data/processed/aligned/*.pt`*
+
+### 3. Feature Caching
+Extract and cache LLM hidden states to disk. This loads the pre-aligned data and runs highly efficient GPU inference.
 
 ```bash
 python -m src.cache_features
 ```
-*Note: This will process the dataset and save tensors to `data/processed/cache`.*
+*Note: This will save tensors to `data/processed/cache`.*
 
-### 3. Training
+### 4. Training
 Train the linear probes using the cached features. This process is highly efficient (minutes).
 
 ```bash

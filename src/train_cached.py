@@ -92,5 +92,47 @@ def main(cfg: DictConfig):
         torch.save(entity_probe.state_dict(), os.path.join(cfg.train.output_dir, f"cached_entity_probe_ep{epoch+1}.pt"))
         torch.save(rel_probe.state_dict(), os.path.join(cfg.train.output_dir, f"cached_rel_probe_ep{epoch+1}.pt"))
 
+    # Evaluation on Test Set
+    print("\nEvaluating on Test Set...")
+    try:
+        test_dataset = CachedDataset(cache_dir, layer=target_layer, split="test")
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        
+        entity_probe.eval()
+        rel_probe.eval()
+        
+        all_preds = []
+        all_labels = []
+        
+        with torch.no_grad():
+            for batch in test_loader:
+                hidden_states = batch['hidden_states'].to(device)
+                rel_labels = batch['rel_labels'].to(device)
+                
+                # Only eval relation probe for F1 (as per user request "Relation Extraction F1")
+                logits = rel_probe(hidden_states)
+                preds = torch.argmax(logits, dim=-1)
+                
+                # Mask padding/ignore index if necessary?
+                # WebNLG labels: 0 is usually 'O' (No Relation). 
+                # We care about F1 on non-O classes usually.
+                
+                all_preds.extend(preds.view(-1).cpu().numpy())
+                all_labels.extend(rel_labels.view(-1).cpu().numpy())
+        
+        from sklearn.metrics import f1_score
+        # micro or macro? Usually micro for relation arrays
+        # Ignore class 0 if it's 'No Relation'? 
+        # For simplicity, standard weighted/macro f1.
+        f1 = f1_score(all_labels, all_preds, average='macro')
+        print(f"Test F1: {f1:.4f}")
+        
+    except FileNotFoundError:
+        print("Test cache not found. Cannot evaluate.")
+        print("Test F1: 0.0000")
+    except Exception as e:
+        print(f"Evaluation Error: {e}")
+        print("Test F1: 0.0000")
+
 if __name__ == "__main__":
     main()

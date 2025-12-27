@@ -27,11 +27,26 @@ def main(cfg: DictConfig):
     save_dir = "data/processed/cache"
     os.makedirs(save_dir, exist_ok=True)
 
-    splits = ["train", "dev"]
+    splits = ["train", "dev", "test"]
     
     for split in splits:
         print(f"\nProcessing split: {split}")
-        dataset = TokenAlignedDataset(data_root, llm.tokenizer, max_len=cfg.dataset.max_len, split=split)
+        # Load pre-aligned data if available
+        aligned_path = f"data/processed/aligned/{split}_aligned.pt"
+        if os.path.exists(aligned_path):
+            print(f"Loading pre-aligned data from {aligned_path}...")
+            aligned_data = torch.load(aligned_path)
+            
+            # Create a simple dataset wrapper
+            class SimpleDataset(torch.utils.data.Dataset):
+                def __init__(self, data): self.data = data
+                def __len__(self): return len(self.data)
+                def __getitem__(self, idx): return self.data[idx]
+            
+            dataset = SimpleDataset(aligned_data)
+        else:
+            print("Pre-aligned data not found. Falling back to TokenAlignedDataset (Slow)...")
+            dataset = TokenAlignedDataset(data_root, llm.tokenizer, max_len=cfg.dataset.max_len, split=split)
         
         # REDUCED BATCH SIZE FOR SAFETY
         extract_batch_size = 8
